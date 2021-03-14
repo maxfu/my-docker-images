@@ -23,21 +23,21 @@ RUN echo "root:root" | chpasswd
 # set password of ${USER} to ${USER}
 RUN echo "${USER}:${USER}" | chpasswd
 
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends apt-utils && \
-    apt-get dist-upgrade -y && \
-    apt-get install -y --no-install-recommends sudo git curl wget ca-certificates python3 python3-numpy fluxbox procps && \
-    apt-get install -y --no-install-recommends tigervnc-standalone-server tigervnc-common && \
-    /bin/echo -e "\n${USER}        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers && \
-    wget https://github.com/novnc/noVNC/archive/v1.2.0.tar.gz -O /tmp/noVNC.tar.gz && \
-    tar -zxvf /tmp/noVNC.tar.gz -C /opt && \
-    git clone https://github.com/novnc/websockify /opt/noVNC-1.2.0/utils/websockify && \
-    rm -rf /opt/noVNC-1.2.0/utils/websockify/.git /tmp/noVNC.tar.gz && \
-    mv /opt/noVNC-1.2.0/vnc_lite.html /opt/noVNC-1.2.0/index.html && \
-    sed -i 's/<title>noVNC<\/title>/<title>Debian Stable<\/title>/g' /opt/noVNC-1.2.0/index.html && \
-    apt-get purge -y git-man git && \
-    apt-get autoremove -y && \
-    apt-get clean
+RUN apt-get update -y
+RUN apt-get install -y --no-install-recommends apt-utils
+RUN apt-get dist-upgrade -y
+RUN apt-get install -y --no-install-recommends sudo git curl wget ca-certificates python3 python3-numpy fluxbox procps
+RUN apt-get install -y --no-install-recommends tigervnc-standalone-server tigervnc-common
+RUN /bin/echo -e "\n${USER}        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
+RUN wget https://github.com/novnc/noVNC/archive/v1.2.0.tar.gz -O /tmp/noVNC.tar.gz
+RUN tar -zxvf /tmp/noVNC.tar.gz -C /opt
+RUN git clone https://github.com/novnc/websockify /opt/noVNC-1.2.0/utils/websockify
+RUN rm -rf /opt/noVNC-1.2.0/utils/websockify/.git /tmp/noVNC.tar.gz
+RUN mv /opt/noVNC-1.2.0/vnc_lite.html /opt/noVNC-1.2.0/index.html
+RUN sed -i 's/<title>noVNC<\/title>/<title>Debian Stable<\/title>/g' /opt/noVNC-1.2.0/index.html
+RUN apt-get purge -y git-man git
+RUN apt-get autoremove -y
+RUN apt-get clean
 
 RUN touch ${HOME}/.vnc/passwd ${HOME}/.Xauthority /var/log/baidunetdisk.log
 
@@ -52,18 +52,18 @@ ADD entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
-RUN apt-get install -y --no-install-recommends dbus-x11 fcitx-module-dbus fcitx-ui-classic fcitx-googlepinyin locales && \
-    apt-get install -y --no-install-recommends libgbm1 libasound2 fonts-wqy-microhei xdg-utils desktop-file-utils midori xterm && \
-    last_version=$(curl -s "https://pan.baidu.com/disk/cmsdata?do=client"|grep -i -o "https:[0-9a-z/\\\.\_\-]*\.deb"|sed 's/\\//g') && \
-    wget ${last_version} -O /tmp/baidunetdisk_linux.deb && \
-    apt-get install -y -f --no-install-recommends /tmp/baidunetdisk_linux.deb && \
-    apt-get clean && rm -f /tmp/baidunetdisk_linux.deb
+RUN apt-get install -y --no-install-recommends dbus-x11 fcitx-module-dbus fcitx-ui-classic fcitx-googlepinyin locales
+RUN apt-get install -y --no-install-recommends libgbm1 libasound2 fonts-wqy-microhei xdg-utils desktop-file-utils chromium chromium-sandbox xterm
+RUN last_version=$(curl -s "https://pan.baidu.com/disk/cmsdata?do=client"|grep -i -o "https:[0-9a-z/\\\.\_\-]*\.deb"|sed 's/\\//g')
+RUN wget ${last_version} -O /tmp/baidunetdisk_linux.deb
+RUN apt-get install -y -f --no-install-recommends /tmp/baidunetdisk_linux.deb
+RUN apt-get clean && rm -f /tmp/baidunetdisk_linux.deb
 
-RUN echo "locales locales/default_environment_locale select zh_CN.UTF-8" | debconf-set-selections && \
-    echo "locales locales/locales_to_be_generated multiselect zh_CN.UTF-8 UTF-8" | debconf-set-selections && \
-    rm "/etc/locale.gen" && \
-    dpkg-reconfigure --frontend noninteractive locales && \
-    locale-gen zh_CN.UTF-8
+RUN /bin/echo "locales locales/default_environment_locale select zh_CN.UTF-8" | debconf-set-selections
+RUN /bin/echo "locales locales/locales_to_be_generated multiselect zh_CN.UTF-8 UTF-8" | debconf-set-selections
+RUN rm "/etc/locale.gen"
+RUN dpkg-reconfigure --frontend noninteractive locales
+RUN locale-gen zh_CN.UTF-8
 
 ENV LC_ALL "zh_CN.UTF-8"
 
