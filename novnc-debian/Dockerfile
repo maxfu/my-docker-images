@@ -7,14 +7,14 @@ LABEL io.openshift.expose-services="5901:tcp"
 USER root
 
 ENV DISPLAY=":1"
-ENV USER="desktopuser"
+ENV USER="debian"
 ENV UID=1000
 ENV GID=0
 ENV HOME=/home/${USER}
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN true
 ARG vnc_password=""
-EXPOSE 5901 6080
+EXPOSE 6080
 
 ADD xstartup ${HOME}/.vnc/
 
@@ -54,8 +54,9 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 RUN apt-get install -y --no-install-recommends dbus-x11 fcitx-module-dbus fcitx-ui-classic fcitx-googlepinyin locales
 RUN apt-get install -y --no-install-recommends libgbm1 libasound2 fonts-wqy-microhei xdg-utils desktop-file-utils chromium chromium-sandbox xterm
-RUN last_version=$(curl -s "https://pan.baidu.com/disk/cmsdata?do=client"|grep -i -o "https:[0-9a-z/\\\.\_\-]*\.deb"|sed 's/\\//g')
-RUN wget ${last_version} -O /tmp/baidunetdisk_linux.deb
+
+RUN last_version=$(curl -s "https://pan.baidu.com/disk/cmsdata?do=client"|grep -i -o "https:[0-9a-z/\\\.\_\-]*\.deb"|sed 's/\\//g') && \
+    wget ${last_version} -O /tmp/baidunetdisk_linux.deb
 RUN apt-get install -y -f --no-install-recommends /tmp/baidunetdisk_linux.deb
 RUN apt-get clean && rm -f /tmp/baidunetdisk_linux.deb
 
@@ -77,8 +78,8 @@ RUN /bin/echo -e "session.screen0.toolbar.placement: TopCenter" >> ${HOME}/.flux
 RUN /bin/echo -e "session.screen0.workspaces:     1 ">> ${HOME}/.fluxbox/init
 
 RUN /bin/echo -e "[begin] (fluxbox)" > ${HOME}/.fluxbox/menu
-RUN /bin/echo -e "[exec] (xTerm) { x-terminal-emulator } <>" >> ${HOME}/.fluxbox/menu
-RUN /bin/echo -e "[exec] (Internet Browser) { midori } <>" >> ${HOME}/.fluxbox/menu
+RUN /bin/echo -e "[exec] (Terminal) { x-terminal-emulator } <>" >> ${HOME}/.fluxbox/menu
+RUN /bin/echo -e "[exec] (Chromium) { www-browser } <>" >> ${HOME}/.fluxbox/menu
 RUN /bin/echo -e "[include] (/etc/X11/fluxbox/fluxbox-menu)" >> ${HOME}/.fluxbox/menu
 RUN /bin/echo -e "[end]" >> ${HOME}/.fluxbox/menu
 
