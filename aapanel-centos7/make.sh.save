@@ -1,7 +1,0 @@
-#!/bin/sh
-
-read -p "Please Input Version"  username
-echo "Welcome $username"
-
-echo 'starting to build image'
-sudo docker build --rm -t xiaoyefu/aapanel:${version} .
