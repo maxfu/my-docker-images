@@ -12,7 +12,7 @@ sudo rm -f /tmp/.X*-lock /tmp/.X11-unix/X*
 sleep 3
 
 if [ -z $vnc_password ]; then
-    /usr/bin/vncserver -geometry 1280x720 -fg -SecurityTypes None,TLSNone
+    /usr/bin/vncserver -geometry 1440x900 -fg -SecurityTypes None,TLSNone
 else
-    /usr/bin/vncserver -geometry 1280x720 -fg
+    /usr/bin/vncserver -geometry 1440x900 -fg
 fi
