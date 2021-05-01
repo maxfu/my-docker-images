@@ -1,6 +1,24 @@
 # Using Debian Stable base image and VNC
+FROM debian:stable-slim as build
 
-FROM debian:stable
+USER root
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV DEBCONF_NONINTERACTIVE_SEEN true
+
+RUN apt-get update -y
+RUN apt-get install -y --no-install-recommends apt-utils
+RUN apt-get install -y --no-install-recommends sudo git curl wget ca-certificates
+RUN wget https://github.com/novnc/noVNC/archive/v1.2.0.tar.gz -O /tmp/noVNC.tar.gz
+RUN tar -zxvf /tmp/noVNC.tar.gz -C /opt
+RUN git clone https://github.com/novnc/websockify /opt/noVNC-1.2.0/utils/websockify
+RUN rm -rf /opt/noVNC-1.2.0/utils/websockify/.git /tmp/noVNC.tar.gz
+RUN mv /opt/noVNC-1.2.0/vnc_lite.html /opt/noVNC-1.2.0/index.html
+RUN sed -i 's/<title>noVNC<\/title>/<title>Debian Downloader<\/title>/g' /opt/noVNC-1.2.0/index.html
+RUN cd /opt/ && tar -cf /noVNC-1.2.0.tar noVNC-1.2.0
+
+FROM debian:stable-slim
+
 MAINTAINER max.fu <fu1983@hotmail.com>
 LABEL io.openshift.expose-services="5901:tcp"
 
@@ -11,10 +29,8 @@ ENV USER="debian"
 ENV UID=1000
 ENV GID=0
 ENV HOME=/home/${USER}
-ENV DEBIAN_FRONTEND noninteractive
-ENV DEBCONF_NONINTERACTIVE_SEEN true
 ARG vnc_password=""
-EXPOSE 6080
+EXPOSE 5900 5901 6080
 
 ADD xstartup ${HOME}/.vnc/
 
@@ -26,18 +42,13 @@ RUN echo "${USER}:${USER}" | chpasswd
 RUN apt-get update -y
 RUN apt-get install -y --no-install-recommends apt-utils
 RUN apt-get dist-upgrade -y
-RUN apt-get install -y --no-install-recommends sudo git curl wget ca-certificates python3 python3-numpy fluxbox procps
-RUN apt-get install -y --no-install-recommends tigervnc-standalone-server tigervnc-common
+RUN apt-get install -y --no-install-recommends sudo curl wget ca-certificates \
+    python3 python3-numpy fluxbox procps tigervnc-standalone-server tigervnc-common
 RUN /bin/echo -e "\n${USER}        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
-RUN wget https://github.com/novnc/noVNC/archive/v1.2.0.tar.gz -O /tmp/noVNC.tar.gz
-RUN tar -zxvf /tmp/noVNC.tar.gz -C /opt
-RUN git clone https://github.com/novnc/websockify /opt/noVNC-1.2.0/utils/websockify
-RUN rm -rf /opt/noVNC-1.2.0/utils/websockify/.git /tmp/noVNC.tar.gz
-RUN mv /opt/noVNC-1.2.0/vnc_lite.html /opt/noVNC-1.2.0/index.html
-RUN sed -i 's/<title>noVNC<\/title>/<title>Debian Stable<\/title>/g' /opt/noVNC-1.2.0/index.html
-RUN apt-get purge -y git-man git
-RUN apt-get autoremove -y
-RUN apt-get clean
+
+COPY --from=build /noVNC-1.2.0.tar /opt/
+RUN cd /opt/ && tar -xf noVNC-1.2.0.tar 
+RUN rm /opt/noVNC-1.2.0.tar
 
 RUN touch ${HOME}/.vnc/passwd ${HOME}/.Xauthority /var/log/baidunetdisk.log
 
@@ -52,8 +63,10 @@ ADD entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
-RUN apt-get install -y --no-install-recommends dbus-x11 fcitx-module-dbus fcitx-ui-classic fcitx-googlepinyin locales
-RUN apt-get install -y --no-install-recommends libgbm1 libasound2 fonts-wqy-microhei xdg-utils desktop-file-utils chromium xterm
+RUN apt-get install -y --no-install-recommends dbus-x11 \
+    fcitx-module-dbus fcitx-ui-classic fcitx-googlepinyin locales \
+    libgbm1 libasound2 fonts-wqy-microhei xdg-utils desktop-file-utils \
+    chromium xterm amule transmission
 
 RUN last_version=$(curl -s "https://pan.baidu.com/disk/cmsdata?do=client"|grep -i -o "https:[0-9a-z/\\\.\_\-]*\.deb"|sed 's/\\//g') && \
     wget ${last_version} -O /tmp/baidunetdisk_linux.deb
@@ -80,6 +93,7 @@ RUN /bin/echo -e "session.screen0.workspaces:     1 ">> ${HOME}/.fluxbox/init
 RUN /bin/echo -e "[begin] (fluxbox)" > ${HOME}/.fluxbox/menu
 RUN /bin/echo -e "[exec] (Terminal) { x-terminal-emulator } <>" >> ${HOME}/.fluxbox/menu
 RUN /bin/echo -e "[exec] (Chromium) { chromium --no-sandbox } <>" >> ${HOME}/.fluxbox/menu
+RUN /bin/echo -e "[exec] (Baidu YunPan) { /opt/baidunetdisk/baidunetdisk --no-sandbox } <>" >> ${HOME}/.fluxbox/menu
 RUN /bin/echo -e "[include] (/etc/X11/fluxbox/fluxbox-menu)" >> ${HOME}/.fluxbox/menu
 RUN /bin/echo -e "[end]" >> ${HOME}/.fluxbox/menu
 
