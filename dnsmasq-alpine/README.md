@@ -1,8 +1,8 @@
-#dnsmasq server with webproc backend
+# dnsmasq server with webproc backend
 
 Thanks to jpillora for webproc and dnsmasq Dockerfile.
 
-##Usage
+## Usage
 
 run make.sh to build the image
 
