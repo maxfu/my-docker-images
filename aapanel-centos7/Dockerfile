@@ -12,14 +12,6 @@ RUN echo '/' > /www/server/panel/data/admin_path.pl
 RUN echo 'aapanel' | bt 6
 RUN echo 'aapanel' | bt 5
 
-ADD mysql.sh /www/server/panel/install/mysql.sh
-ADD nginx.sh /www/server/panel/install/nginx.sh
-ADD php.sh   /www/server/panel/install/php.sh
-
-RUN bash /www/server/panel/install/nginx.sh install 1.20
-RUN bash /www/server/panel/install/mysql.sh install mariadb_10.5
-RUN bash /www/server/panel/install/php.sh install 74
-
 EXPOSE 80 443 888 8888
 
 ENTRYPOINT bt start && tail -f /www/server/panel/logs/error.log
