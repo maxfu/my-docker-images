@@ -5,9 +5,6 @@ MAINTAINER max.fu <fu1983@hotmail.com>
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN true
 
-ENV BUILD_VERSION=4.34-9745-beta \
-    SHA256_SUM=a2d7951f4fafcef96ab8341a948a8d09ca02030e4161c5e90a34882aa8b34224
-
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     build-essential \
