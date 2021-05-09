@@ -17,4 +17,4 @@ COPY dnsmasq.leases /var/lib/dnsmasq/dnsmasq.leases
 
 EXPOSE 53/tcp 53/udp 67/tcp 67/udp 8080/tcp
 #run!
-ENTRYPOINT ["webproc","-c","/etc/dnsmasq.conf","-c","/var/lib/dnsmasq/dnsmasq.leases","--","dnsmasq","--keep-in-foreground"]
+ENTRYPOINT ["webproc","-c","/etc/dnsmasq.conf","-c","/var/lib/dnsmasq/dnsmasq.leases","--","dnsmasq","--no-daemon"]
